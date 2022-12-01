@@ -102,7 +102,6 @@ public class UserController {
         }
     }
 
-
 //    @PostMapping("/Test")  测试文件+普通数据上传，对应前端代码在tabs_page C2组件中
 //    @ResponseBody
 //    public void test(@RequestParam("img") MultipartFile img,HttpSession session,User user) throws IOException {
