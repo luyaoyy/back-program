@@ -1,0 +1,361 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.blue.sky.mapper.MovieMapper">
+    <resultMap id="MovieAndSeat" type="Session">
+        <id property="sid" column="sid"/>
+        <result property="begTime" column="begTime"/>
+        <result property="room" column="room"/>
+        <result property="manager" column="manager"/>
+        <association property="movie" javaType="Movie">  <!---关联查询结果为列表集合-->
+            <id property="id" column="id"/>
+            <result property="mname" column="mname"/>
+            <result property="mclass" column="mclass"/>
+            <result property="mduration" column="mduration"/>
+            <result property="mpeople" column="mpeople"/>
+            <result property="mactor" column="mactor"/>
+            <result property="mduration" column="mduration"/>
+            <result property="mnation" column="mnation"/>
+            <result property="mprice" column="mprice"/>
+            <result property="mtime" column="mtime"/>
+            <result property="mgrade" column="mgrade"/>
+            <result property="mintroduce" column="mintroduce"/>
+            <result property="mimg" column="mimg"/>
+            <result property="ishot" column="ishot"></result>
+        </association>
+    </resultMap>
+    <select id="getSession" resultMap="MovieAndSeat">
+        select S.sid,
+               S.mid,
+               S.manager,
+               S.beg_time as begTime,
+               S.room,
+               M.id,
+               M.mname,
+               M.mclass,
+               M.mduration,
+               M.mpeople,
+               M.mactor,
+               M.mnation,
+               M.mprice,
+               M.mtime,
+               M.mgrade,
+               M.mintroduce,
+               M.mimg,
+               M.ishot
+        from moviesession S,
+             mymovie M
+        where S.mid = M.id
+          and S.sid = #{sid}
+    </select>
+
+    <select id="getSeat" resultType="java.lang.Integer">
+        select t.seat
+        from moviesession s,
+             ticket t
+        where s.sid = t.sessionid
+          and s.sid = #{sid}
+    </select>
+
+    <insert id="buyTicket">
+        insert into ticket(movid,useid,number,sessionid,seat,tprice,status,buy_time)
+        values
+        <foreach collection="list" item="item" separator=","><!-- 批量插入不需要 open="("和close=")",否则语法错误 -->
+            (#{item.movid},#{item.useid},#{item.number},#{item.sessionid},#{item.seat},#{item.tprice},#{item.status},#{item.buyTime})
+        </foreach>
+    </insert>
+
+    <select id="checkTicket" resultType="Ticket">
+        select *
+        from ticket
+        where seat in
+        <foreach collection="list" item="item" open="(" close=")"
+                 separator=","><!-- 批量插入不需要 open="("和close=")",否则语法错误 -->
+            #{item.seat}
+        </foreach>
+        and movid=#{list[0].movid} and sessionid=#{list[0].sessionid}
+    </select>
+
+
+
+    <select id="getAllMovieList" resultType="Movie">
+        select *
+        from mymovie
+    </select>
+    <select id="getMovieSessionList" resultMap="MovieAndSeat">
+        select S.sid,
+               S.mid,
+               S.manager,
+               S.beg_time as begTime,
+               S.room,
+               M.id,
+               M.mname,
+               M.mclass,
+               M.mduration,
+               M.mpeople,
+               M.mactor,
+               M.mnation,
+               M.mprice,
+               M.mtime,
+               M.mgrade,
+               M.mintroduce,
+               M.mimg,
+               M.ishot
+        from moviesession S,
+             mymovie M
+        where S.mid = #{mid}
+          and M.id = #{mid}
+    </select>
+
+    <delete id="delMovieByMid">
+        delete
+        from mymovie
+        where id = #{mid}
+    </delete>
+
+    <update id="updateMovie">
+        update mymovie
+        <set>
+            <if test="mname != null">mname=#{mname},</if>
+            <if test="mclass != null">mclass=#{mclass},</if>
+            <if test="mduration != null">mduration=#{mduration},</if>
+            <if test="mpeople != null">mpeople=#{mpeople},</if>
+            <if test="mactor != null">mactor=#{mactor},</if>
+            <if test="mnation != null">mnation=#{mnation},</if>
+            <if test="mprice != null">mprice=#{mprice},</if>
+            <if test="mtime != null">mtime=#{mtime},</if>
+            <if test="mgrade != null">mgrade=#{mgrade},</if>
+            <if test="mintroduce != null">mintroduce=#{mintroduce},</if>
+            <if test="mimg != null">mimg=#{mimg},</if>
+            <if test="ishot!=null">ishot=#{ishot}</if>
+        </set>
+        where id=#{id}
+    </update>
+
+    <insert id="addMovieSession">
+        insert into moviesession(mid, manager, beg_time, room, status)
+        values (#{mid}, #{manager}, #{begTime}, #{room}, #{status})
+    </insert>
+
+    <select id="gerTotalMoney" resultType="long">
+        select sum(tprice)
+        from ticket where status=1
+    </select>
+
+
+    <resultMap id="MovieRankMapper" type="MovieRank">
+        <result property="mid" column="mid"/>
+        <result property="mname" column="name"/>
+        <result property="mimg" column="img"/>
+        <result property="total" column="total"/>
+        <association property="movie" javaType="Movie">  <!---关联查询结果为列表集合-->
+            <id property="id" column="id"/>
+            <result property="mname" column="mname"/>
+            <result property="mclass" column="mclass"/>
+            <result property="mduration" column="mduration"/>
+            <result property="mpeople" column="mpeople"/>
+            <result property="mactor" column="mactor"/>
+            <result property="mduration" column="mduration"/>
+            <result property="mnation" column="mnation"/>
+            <result property="mprice" column="mprice"/>
+            <result property="mtime" column="mtime"/>
+            <result property="mgrade" column="mgrade"/>
+            <result property="mintroduce" column="mintroduce"/>
+            <result property="mimg" column="mimg"/>
+            <result property="ishot" column="ishot"></result>
+        </association>
+    </resultMap>
+    <select id="getMovieRankList" resultMap="MovieRankMapper">
+        select t.movid                                    as mid,
+               (select mname from mymovie where id = mid) as name,
+               t.tprice * count(*)                        as total,
+               (select mimg from mymovie where id = mid)  as img,
+               m.*
+        from ticket t,
+             mymovie m
+        where t.movid = m.id
+              and t.status=1
+        group by t.movid
+        order by count(*) * t.tprice desc
+    </select>
+    <insert id="addSlideImg">
+        insert into slideimg(mid, img_url, create_time)
+        values (#{mid}, #{imgUrl}, #{createTime})
+    </insert>
+
+
+    <resultMap id="MovieAndSlideImg" type="SlideImg">
+        <id property="id" column="sid"/>
+        <result property="imgUrl" column="imgUrl"/>
+        <result property="createTime" column="createTime"/>
+        <association property="movie" javaType="Movie">  <!---关联查询结果为列表集合-->
+            <id property="id" column="mid"/>
+            <result property="mname" column="mname"/>
+            <result property="mclass" column="mclass"/>
+            <result property="mduration" column="mduration"/>
+            <result property="mpeople" column="mpeople"/>
+            <result property="mactor" column="mactor"/>
+            <result property="mduration" column="mduration"/>
+            <result property="mnation" column="mnation"/>
+            <result property="mprice" column="mprice"/>
+            <result property="mtime" column="mtime"/>
+            <result property="mgrade" column="mgrade"/>
+            <result property="mintroduce" column="mintroduce"/>
+            <result property="mimg" column="mimg"/>
+            <result property="ishot" column="ishot"/>
+        </association>
+    </resultMap>
+    <select id="getSlideImgList" resultMap="MovieAndSlideImg">
+        select M.id          as mid,
+               M.mname,
+               M.mclass,
+               M.mduration,
+               M.mpeople,
+               M.mactor,
+               M.mnation,
+               M.mprice,
+               M.mtime,
+               M.mgrade,
+               M.mintroduce,
+               M.mimg,
+               M.ishot,
+               S.id          as sid,
+               S.img_url     as imgUrl,
+               S.create_time as createTime
+        from mymovie M,
+             slideimg S
+        where S.mid = M.id
+        group by S.id
+    </select>
+    <select id="getMovieListByKeyWord" resultType="Movie">
+        select *
+        from mymovie
+        where mname like concat('%', #{keyWord}, '%')
+    </select>
+
+
+    <resultMap id="TicketOrderMap" type="TicketOrder">
+        <result property="amount" column="amount"/>
+        <result property="number" column="number"/>
+        <result property="total" column="total"/>
+        <result property="seat" column="seat"/>
+        <result property="buyTime" column="buyTime"/>
+        <result property="status" column="tstatus"/>
+        <association property="movie" javaType="Movie">
+            <id property="id" column="mid"/>
+            <result property="mname" column="mname"/>
+            <result property="mclass" column="mclass"/>
+            <result property="mduration" column="mduration"/>
+            <result property="mpeople" column="mpeople"/>
+            <result property="mactor" column="mactor"/>
+            <result property="mduration" column="mduration"/>
+            <result property="mnation" column="mnation"/>
+            <result property="mprice" column="mprice"/>
+            <result property="mtime" column="mtime"/>
+            <result property="mgrade" column="mgrade"/>
+            <result property="mintroduce" column="mintroduce"/>
+            <result property="mimg" column="mimg"/>
+            <result property="ishot" column="ishot"/>
+        </association>
+        <association property="user" javaType="User">
+            <id property="uid" column="uid"/>
+            <result property="uname" column="uname"/>
+            <result property="upassword" column="upassword"/>
+            <result property="ugender" column="ugender"/>
+            <result property="uage" column="uage"/>
+            <result property="uphone" column="uphone"/>
+            <result property="uemail" column="uemail"/>
+            <result property="uadress" column="uadress"/>
+            <result property="uregisterTime" column="uregister_time"/>
+            <result property="uheader" column="uheader"/>
+        </association>
+        <association property="session" javaType="Session">
+            <id property="sid" column="sid"/>
+            <result property="mid" column="mid"/>
+            <result property="manager" column="upassword"/>
+            <result property="begTime" column="beg_time"/>
+            <result property="room" column="room"/>
+            <result property="status" column="status"/>
+        </association>
+    </resultMap>
+    <select id="getTicketOrderList" resultMap="TicketOrderMap">
+        SELECT (SELECT count(*) FROM ticket WHERE number = T.number)            AS amount,
+               (SELECT count(*) FROM ticket WHERE number = T.number) * T.tprice AS total,
+               group_concat(T.seat)                                             AS seat,
+               T.number,
+               T.movid,
+               T.useid,
+               T.STATUS                                                         AS tstatus,
+               T.buy_time                                                       AS buyTime,
+               M.*,
+               U.*,
+               S.*
+        FROM ticket T,
+             myuser U,
+             mymovie M,
+             moviesession S
+        WHERE T.movid = M.id
+          AND U.uid = T.useid
+          AND T.sessionid = S.sid
+        GROUP BY T.number
+        ORDER BY t.tid desc
+    </select>
+
+
+    <select id="getTicketOrderByKeyWord" resultMap="TicketOrderMap">
+        select (SELECT count(*) FROM ticket WHERE number = T.number) AS amount,
+        (SELECT count(*) FROM ticket WHERE number = T.number) * T.tprice AS total,
+        u.*,
+        m.*,
+        s.*,
+        t.tprice as soloPrice,
+        group_concat(t.seat) as seat,
+        t.number,
+        t.movid,
+        t.useid,
+        t.status as tstatus,
+        t.buy_time as buyTime
+        from myuser u,
+        mymovie m,
+        ticket t,
+        moviesession s
+        <where>
+            <if test="type=='手机号'">
+                t.useid=(select uid from myuser where uphone=#{keyWord})
+                and t.movid=m.id
+                and u.uid=t.useid
+                and t.sessionid=s.sid
+            </if>
+            <if test="type=='订单号'">
+                t.number=#{keyWord} and
+                t.useid=u.uid and
+                t.movid=m.id and
+                t.sessionid=s.sid
+            </if>
+        </where>
+        group by t.number
+        order by t.tid desc
+    </select>
+
+    <select id="getHotMovieByKeyWord" resultType="Movie">
+        select *
+        from mymovie
+        <where>
+            <if test="mclass!=''">
+                mclass like concat('%',#{mclass},'%')
+            </if>
+            <if test="mnation!=''">
+                and mnation=#{mnation}
+            </if>
+            and ishot=1
+        </where>
+    </select>
+
+
+    <select id="getMovieSearchResult" resultType="Movie">
+        select *
+        from mymovie
+        where ${searchType} like concat('%', #{searchContent}, '%')
+    </select>
+</mapper>

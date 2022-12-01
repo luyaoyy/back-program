@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.blue.sky.mapper.UserMapper">
+    <insert id="HandleUserRegister">
+        insert into myuser(uname, upassword, ugender, uage, uphone, uemail, uadress, ubanlance, uregister_time, uheader)
+        values (#{uname}, #{upassword}, #{ugender}, #{uage}, #{uphone}, #{uemail}, #{uadress}, #{ubanlance},
+                #{uregisterTime}, #{uheader})
+    </insert>
+    <select id="CheckName" resultType="int">
+        select count(*)
+        from myuser
+        where uname = #{name}
+    </select>
+    <select id="CheckLogin" resultType="User">
+        select *
+        from myuser
+        where uname = #{uname}
+          and upassword = #{upassword}
+    </select>
+
+    <resultMap id="TicketOrderMap" type="TicketOrder">
+        <result property="amount" column="amount"/>
+        <result property="number" column="number"/>
+        <result property="total" column="total"/>
+        <result property="seat" column="seat"/>
+        <result property="buyTime" column="buyTime"/>
+        <result property="status" column="tstatus"/>
+        <association property="movie" javaType="Movie">  <!---关联查询一对一-->
+            <id property="id" column="mid"/>
+            <result property="mname" column="mname"/>
+            <result property="mclass" column="mclass"/>
+            <result property="mduration" column="mduration"/>
+            <result property="mpeople" column="mpeople"/>
+            <result property="mactor" column="mactor"/>
+            <result property="mduration" column="mduration"/>
+            <result property="mnation" column="mnation"/>
+            <result property="mprice" column="mprice"/>
+            <result property="mtime" column="mtime"/>
+            <result property="mgrade" column="mgrade"/>
+            <result property="mintroduce" column="mintroduce"/>
+            <result property="mimg" column="mimg"/>
+            <result property="ishot" column="ishot"/>
+        </association>
+        <association property="user" javaType="User">
+            <id property="uid" column="uid"/>
+            <result property="uname" column="uname"/>
+            <result property="upassword" column="upassword"/>
+            <result property="ugender" column="ugender"/>
+            <result property="uage" column="uage"/>
+            <result property="uphone" column="uphone"/>
+            <result property="uemail" column="uemail"/>
+            <result property="uadress" column="uadress"/>
+            <result property="uregisterTime" column="uregister_time"/>
+            <result property="uheader" column="uheader"/>
+        </association>
+        <association property="session" javaType="Session">
+            <id property="sid" column="sid"/>
+            <result property="mid" column="mid"/>
+            <result property="manager" column="upassword"/>
+            <result property="begTime" column="beg_time"/>
+            <result property="room" column="room"/>
+            <result property="status" column="status"/>
+        </association>
+    </resultMap>
+    <select id="getUserPaidTicketList" resultMap="TicketOrderMap">
+        select (select count(*) from ticket where number = t.number)            as amount,
+               (select count(*) from ticket where number = t.number) * t.tprice as total,
+               group_concat(T.seat)                                             as seat,
+               t.number,
+               t.movid,
+               t.useid,
+               t.status                                                         as tstatus,
+               t.buy_time                                                       as buyTime,
+               u.*,
+               m.*,
+               s.*
+        from ticket t,
+             myuser u,
+             mymovie m,
+             moviesession s
+        where t.useid = #{uid}
+          and u.uid = t.useid
+          and m.id = t.movid
+          and s.sid = t.sessionid
+          and t.status = 1
+        group by t.number
+        order by t.tid desc
+    </select>
+
+    <select id="geTWaitPaidUserOrderList" resultMap="TicketOrderMap">
+        select (select count(*) from ticket where number = t.number)            as amount,
+               (select count(*) from ticket where number = t.number) * t.tprice as total,
+               group_concat(T.seat)                                             as seat,
+               t.number,
+               t.movid,
+               t.useid,
+               t.status                                                         as tstatus,
+               t.buy_time                                                       as buyTime,
+               u.*,
+               m.*,
+               s.*
+        from ticket t,
+             myuser u,
+             mymovie m,
+             moviesession s
+        where t.useid = #{uid}
+          and u.uid = t.useid
+          and m.id = t.movid
+          and s.sid = t.sessionid
+          and t.status = 0
+        group by t.number
+        order by t.tid desc
+    </select>
+
+
+    <update id="updateTicketStatus">
+        update
+            ticket
+        set status=1
+        where number = #{number}
+    </update>
+
+
+    <update id="subBalance">
+        update
+            myuser
+        set ubanlance =ubanlance - #{total}
+        where uid = #{uid}
+    </update>
+
+    <insert id="addComment">
+        insert into mycomment(mid, uid, content, grade, time)
+        values (#{mid}, #{uid}, #{content}, #{grade}, #{time})
+    </insert>
+
+
+    <resultMap id="CommentMap" type="Comment">
+        <id property="cid" column="cid"/>
+        <result property="grade" column="grade"/>
+        <result property="content" column="content"/>
+        <result property="time" column="time"/>
+        <result property="mid" column="mid"/>
+        <result property="uid" column="uid"/>
+        <result property="count" column="count"/>
+        <result property="isLike" column="isLike"/>
+        <association property="user" javaType="User">
+            <id property="uid" column="uid"/>
+            <result property="uname" column="uname"/>
+            <result property="upassword" column="upassword"/>
+            <result property="ugender" column="ugender"/>
+            <result property="uage" column="uage"/>
+            <result property="uphone" column="uphone"/>
+            <result property="uemail" column="uemail"/>
+            <result property="uadress" column="uadress"/>
+            <result property="uregisterTime" column="uregister_time"/>
+            <result property="uheader" column="uheader"/>
+        </association>
+    </resultMap>
+
+    <select id="getCommentList" resultMap="CommentMap">
+        select mc.*,
+               mu.*,
+               (select count(*) from commentlike where cid = mc.cid) as count
+        from
+            mycomment mc, commentlike cl, myuser mu
+        where
+            mc.mid=#{mid}
+          and mc.uid=mu.uid
+        group by mc.cid
+        order by mc.cid desc
+    </select>
+
+    <select id="isExistCommentLike" resultType="CommentLike">
+        select *
+        from commentlike
+        where uid = #{uid}
+          and cid = #{cid}
+    </select>
+
+</mapper>
