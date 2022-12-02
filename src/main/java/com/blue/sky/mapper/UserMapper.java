@@ -1,9 +1,6 @@
 package com.blue.sky.mapper;
 
-import com.blue.sky.bean.Comment;
-import com.blue.sky.bean.CommentLike;
-import com.blue.sky.bean.TicketOrder;
-import com.blue.sky.bean.User;
+import com.blue.sky.bean.*;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;
@@ -46,4 +43,9 @@ public interface UserMapper {
     void addLike(@Param("uid") int uid, @Param("cid") int cid);
 
     CommentLike isExistCommentLike(@Param("uid") int uid, @Param("cid") int cid);
+
+    void addFavorite(Favorite favorite);
+    void delFavorite(Favorite favorite);
+    @Select("select * from myfavoritemovie where uid=#{uid} and mid=#{mid}")
+    Favorite isExistFavorite(@Param("uid") int uid, @Param("mid") int mid);
 }

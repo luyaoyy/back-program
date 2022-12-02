@@ -148,7 +148,7 @@ public class UserController {
 
     @GetMapping("/GetCommentList")
     @ResponseBody
-    public List<Comment> getCommentList(int uid,int mid) {
+    public List<Comment> getCommentList(int uid, int mid) {
         List<Comment> comments = userService.getCommentList(mid);
         for (int i = 0; i < comments.size(); i++) {
             int cId = comments.get(i).getCid();
@@ -193,5 +193,32 @@ public class UserController {
         return comments;
     }
 
-//    111
+    @PostMapping("/AddFavorite")
+    @ResponseBody
+    public Map<String, Object> addFavorite(Favorite favorite, String type) {
+        Map<String, Object> map = new HashMap<>();
+        try {
+            if (type.equals("add")) {
+                userService.addFavorite(favorite);
+                map.put("message", "已添加收藏!");
+                map.put("isFavorite", true);
+            } else {
+                userService.delFavorite(favorite);
+                map.put("message", "已取消收藏!");
+                map.put("isFavorite", false);
+            }
+            map.put("isError", false);
+        } catch (Exception e) {
+            map.put("message", "操作失败!");
+            map.put("isError", true);
+        } finally {
+            return map;
+        }
+    }
+
+    @GetMapping("/IsExistFavorite")
+    @ResponseBody
+    public boolean isExistFavorite(int uid, int mid) {
+        return userService.isExistFavorite(uid, mid) == null ? false : true;
+    }
 }

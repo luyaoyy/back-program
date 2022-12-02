@@ -1,9 +1,6 @@
 package com.blue.sky.service;
 
-import com.blue.sky.bean.Comment;
-import com.blue.sky.bean.CommentLike;
-import com.blue.sky.bean.TicketOrder;
-import com.blue.sky.bean.User;
+import com.blue.sky.bean.*;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Param;
 
@@ -37,4 +34,12 @@ public interface UserService {
     void addLike(int uid, int cid);
 
     CommentLike isExistCommentLike(int uid, int cid);
+
+    void addFavorite(Favorite favorite);
+
+    void delFavorite(Favorite favorite);
+
+    Favorite isExistFavorite(int uid, int mid);
+
+
 }

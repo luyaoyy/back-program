@@ -179,4 +179,12 @@
           and cid = #{cid}
     </select>
 
+    <insert id="addFavorite">
+        insert into myfavoritemovie(uid,mid) values (#{uid},#{mid})
+    </insert>
+
+    <delete id="delFavorite">
+        delete from myfavoritemovie where uid=#{uid} and mid=#{mid}
+    </delete>
+
 </mapper>

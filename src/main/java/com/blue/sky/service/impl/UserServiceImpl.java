@@ -1,9 +1,6 @@
 package com.blue.sky.service.impl;
 
-import com.blue.sky.bean.Comment;
-import com.blue.sky.bean.CommentLike;
-import com.blue.sky.bean.TicketOrder;
-import com.blue.sky.bean.User;
+import com.blue.sky.bean.*;
 import com.blue.sky.mapper.UserMapper;
 import com.blue.sky.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -90,5 +87,20 @@ public class UserServiceImpl implements UserService {
     @Override
     public CommentLike isExistCommentLike(int uid, int cid) {
         return userMapper.isExistCommentLike(uid,cid);
+    }
+
+    @Override
+    public void addFavorite(Favorite favorite) {
+        userMapper.addFavorite(favorite);
+    }
+
+    @Override
+    public void delFavorite(Favorite favorite) {
+        userMapper.delFavorite(favorite);
+    }
+
+    @Override
+    public Favorite isExistFavorite(int uid, int mid) {
+        return userMapper.isExistFavorite(uid,mid);
     }
 }
